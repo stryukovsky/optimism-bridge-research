@@ -5,6 +5,7 @@
 const ethers = require("ethers")
 const optimismSDK = require("@eth-optimism/sdk")
 require('dotenv').config()
+const erc20ABI = require("./contract/abi.json")
 
 
 const mnemonic = process.env.MNEMONIC
@@ -53,24 +54,6 @@ const getSigners = async () => {
 // 1. Get an account's balance
 // 2. Call the mint to get more (only works on L1). Of course, production
 //    ERC-20 tokens tend to be a bit harder to acquire.
-const erc20ABI = [
-    // balanceOf
-    {
-        constant: true,
-        inputs: [{name: "_owner", type: "address"}],
-        name: "balanceOf",
-        outputs: [{name: "balance", type: "uint256"}],
-        type: "function",
-    },
-    // faucet
-    {
-        inputs: [],
-        name: "faucet",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function"
-    }
-]    // erc20ABI
 
 const setup = async () => {
     const [l1Signer, l2Signer] = await getSigners()
@@ -85,6 +68,7 @@ const setup = async () => {
     l1ERC20 = new ethers.Contract(erc20Addrs.l1Addr, erc20ABI, l1Signer)
     l2ERC20 = new ethers.Contract(erc20Addrs.l2Addr, erc20ABI, l2Signer)
 }    // setup
+const bridgeAmount = BigInt(2); // 2 wei
 
 const reportERC20Balances = async () => {
     const l1Balance = (await l1ERC20.balanceOf(ourAddr)).toString();
@@ -96,7 +80,7 @@ const reportERC20Balances = async () => {
     }
 
     console.log(`You don't have enough OUTb on L1. Let's call the faucet to fix that`)
-    const tx = (await l1ERC20.faucet())
+    const tx = (await l1ERC20.mint(ourAddr, bridgeAmount))
     console.log(`Faucet tx: ${tx.hash}`)
     console.log(`\tMore info: https://goerli.etherscan.io/tx/${tx.hash}`)
     await tx.wait()
@@ -105,7 +89,6 @@ const reportERC20Balances = async () => {
 }    // reportERC20Balances
 
 
-const bridgeAmount = BigInt(2); // 2 wei
 
 
 const depositERC20 = async () => {
@@ -119,13 +102,13 @@ const depositERC20 = async () => {
         erc20Addrs.l1Addr, erc20Addrs.l2Addr, bridgeAmount)
     await allowanceResponse.wait()
     console.log(`Allowance given by tx ${allowanceResponse.hash}`)
-    console.log(`\tMore info: https://sepolia.etherscan.io/tx/${allowanceResponse.hash}`)
+    console.log(`\tMore info: https://goerli.etherscan.io/tx/${allowanceResponse.hash}`)
     console.log(`Time so far ${(new Date() - start) / 1000} seconds`)
 
     const response = await crossChainMessenger.depositERC20(
         erc20Addrs.l1Addr, erc20Addrs.l2Addr, bridgeAmount)
     console.log(`Deposit transaction hash (on L1): ${response.hash}`)
-    console.log(`\tMore info: https://sepolia.etherscan.io/tx/${response.hash}`)
+    console.log(`\tMore info: https://goerli.etherscan.io/tx/${response.hash}`)
     await response.wait()
     console.log("Waiting for status to change to RELAYED")
     console.log(`Time so far ${(new Date() - start) / 1000} seconds`)
@@ -146,7 +129,7 @@ const withdrawERC20 = async () => {
     const response = await crossChainMessenger.withdrawERC20(
         erc20Addrs.l1Addr, erc20Addrs.l2Addr, bridgeAmount)
     console.log(`Transaction hash (on L2): ${response.hash}`)
-    console.log(`\tFor more information: https://sepolia-optimism.etherscan.io/tx/${response.hash}`)
+    console.log(`\tFor more information: https://goerli-optimism.etherscan.io/tx/${response.hash}`)
     await response.wait()
 
     console.log("Waiting for status to be READY_TO_PROVE")
