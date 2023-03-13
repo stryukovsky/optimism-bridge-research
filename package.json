@@ -1,0 +1,14 @@
+{
+  "name": "cross-dom-bridge-erc20",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@eth-optimism/contracts": "^0.5.40",
+    "@eth-optimism/sdk": "^1.10.0",
+    "dotenv": "^16.0.0"
+  },
+  "scripts": {
+    "script": "node index.js"
+  }
+}
