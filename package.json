@@ -6,8 +6,10 @@
   "dependencies": {
     "@eth-optimism/contracts": "^0.5.40",
     "@eth-optimism/sdk": "^1.10.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "ethers": "5.7.2"
   },
+  "type": "commonjs",
   "scripts": {
     "script": "node index.js"
   }

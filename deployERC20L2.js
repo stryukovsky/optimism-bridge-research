@@ -21,7 +21,7 @@ const main = async () => {
         "TKN_L2"
     );
     const receipt = await deployTx.wait();
-    const event = receipt.events.filter(x => x.event == "OptimismMintableERC20Created")[0];
+    const event = receipt.events.filter(x => x.event === "OptimismMintableERC20Created")[0];
     const l2Addr = event.args.localToken;
     console.log(l2Addr);
 }
